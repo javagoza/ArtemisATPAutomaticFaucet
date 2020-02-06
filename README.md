@@ -46,7 +46,7 @@ The Arduino application is available for a variety of platforms and is available
 The examples utilize the TensorFlowLite Arduino libary, which is installed using the Arduino Library Manager. 
 
 To install this library, use the following steps:
-<img src="resource/TFL_Install.png"  align="right" width=350>
+<img src="resources/TFL_Install.png"  align="right" width=350>
 * In Arduino, select the "Manage Libraries..." menu item. ***Tools > Manage Libraries...***
 * In the Library Manager interface, search for tensorflow
 * Select the library **Arduino_TensorFlowLite** by **TensorFlow Authors**
@@ -66,14 +66,14 @@ To install package, use the following steps:
 
 * Select the ***OK*** button to save the preferences.
 
-<img src="resource/BoardPacakgeURL.png" >
+<img src="resources/BoardPacakgeURL.png" >
 
 #### Install the SparkFun Artemis Boards Package 
 
 Once the location of the SparkFun boards package is set in the preferences, the board definition package for the SparkFun Apollo3 boards must be installed. 
 
 To install package, use the following steps:
-<img src="resource/BoardManager.png"  align="right" width=350>
+<img src="resources/BoardManager.png"  align="right" width=350>
 * In Arduino, open the Preferences menu item. ***Tools > Board "..." > Manage Boards...***
 * Search for *SparkFun*
 * Select the **SparkFun Apollo3 Boards" package 
