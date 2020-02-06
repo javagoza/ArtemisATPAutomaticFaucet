@@ -1,4 +1,4 @@
-/* Copyright 2019 The TensorFlow Authors. All Rights Reserved.
+/* Author: Enrique Albertos
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,16 +13,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#ifndef TENSORFLOW_LITE_EXPERIMENTAL_MICRO_EXAMPLES_MICRO_SPEECH_MAIN_FUNCTIONS_H_
-#define TENSORFLOW_LITE_EXPERIMENTAL_MICRO_EXAMPLES_MICRO_SPEECH_MAIN_FUNCTIONS_H_
+#ifndef FAUCET_ARDUINO_MAIN_FUNCTIONS_H_
+#define FAUCET_ARDUINO_MAIN_FUNCTIONS_H_
 
-// Initializes all data needed for the example. The name is important, and needs
-// to be setup() for Arduino compatibility.
+// Arduino setup, initializes all data.
 void setup();
 
-// Runs one iteration of data gathering and inference. This should be called
-// repeatedly from the application code. The name needs to be loop() for Arduino
-// compatibility.
+// Arduino loop, runs the main loop, detects presence and makes one iteration of data gathering 
+// and inference or activates bluetooth. 
 void loop();
 
-#endif  // TENSORFLOW_LITE_EXPERIMENTAL_MICRO_EXAMPLES_MICRO_SPEECH_MAIN_FUNCTIONS_H_
+#endif  // FAUCET_ARDUINO_MAIN_FUNCTIONS_H_

@@ -48,7 +48,7 @@ void setup_logging()
   error_reporter = &micro_error_reporter;
 }
 
-// The name of this function is important for Arduino compatibility.
+// Arduino setup.
 void setup()
 {
 
@@ -74,19 +74,52 @@ State getNewState(uint16_t proxValue)
   return IDLE;
 }
 
-// The name of this function is important for Arduino compatibility.
-void loop()
+void processOnlyLevelState()
 {
+  // TODO adjust actual level
+  // Do not activate valves only change temp level
+  faucetController->valves_state_clear();
+  faucetMicrospeech->process(error_reporter, false);
+}
 
+void processOpenState()
+{
+  // TODO adjust actual level
+  // Activate valves and change temp level
+  faucetMicrospeech->process(error_reporter, true);
+}
+
+void processBluetoothState()
+{
   static bool is_ble_ready = false;
   static bool is_ble_initialized = false;
+  faucetController->set_blue_led_high();
+  if (!is_ble_initialized)
+  {
+    is_ble_initialized = true;
 
+    error_reporter->Report("Ble setup");
+    setup_ble();
+    is_ble_ready = true;
+  }
+  if (is_ble_ready)
+  {
+    loop_ble();
+  }
+}
+
+void processIdleState()
+{
+  faucetController->set_blue_led_low();
+
+  //faucetController->level_display_clear();
+  faucetController->valves_state_clear();
+}
+
+State debounceState(State actualState, State newState){
+  
   static int counter = 0;
-
-  //Get proximity value. The value ranges from 0 to 65535
-  uint16_t proxValue = faucetProximitySensor->getProximity();
-  State newState = getNewState(proxValue);
-
+  
   if (newState == actualState && counter > 0)
   {
     counter--;
@@ -100,44 +133,36 @@ void loop()
   if (counter >= DEBOUNCE_COUNT)
   {
     counter = 0;
-    actualState = newState;
+    return newState;
+#ifdef DEBUG
     error_reporter->Report("Proximity Value: %d Actual state: %d", proxValue, actualState);
+#endif
   }
+  return actualState;
 
-  if (actualState == ONLY_LEVEL)
-  {
-    // TODO adjust actual level
-    // Do not activate valves only change temp level
-    faucetController->valves_state_clear();
-    faucetMicrospeech->process(error_reporter, false);
-  }
-  else if (actualState == OPEN)
-  {
-    // TODO adjust actual level
-    // Activate valves and change temp level
-    faucetMicrospeech->process(error_reporter, true);
-  }
-  else if (actualState == BLUETOOTH)
-  {
-    faucetController->set_blue_led_high();
-    if (!is_ble_initialized)
-    {
-      is_ble_initialized = true;
+}
 
-      error_reporter->Report("Ble setup");
-      setup_ble();
-      is_ble_ready = true;
-    }
-    if (is_ble_ready)
-    {
-      loop_ble();
-    }
-  }
-  else
-  {
-    faucetController->set_blue_led_low();
+// Arduino loop.
+void loop()
+{
 
-    //faucetController->level_display_clear();
-    faucetController->valves_state_clear();
+  //Get proximity value. The value ranges from 0 to 65535
+  uint16_t proxValue = faucetProximitySensor->getProximity();
+  State newState = getNewState(proxValue);
+  actualState = debounceState(actualState, newState);
+
+  switch (actualState)
+  {
+  case ONLY_LEVEL:
+    processOnlyLevelState();
+    break;
+  case OPEN:
+    processOpenState();
+    break;
+  case BLUETOOTH:
+    processBluetoothState();
+    break;
+  default:
+    processIdleState();
   }
 }
