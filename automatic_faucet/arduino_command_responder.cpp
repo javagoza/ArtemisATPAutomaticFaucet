@@ -17,16 +17,14 @@ limitations under the License.
 
 #include "am_bsp.h" // NOLINT
 
-#include "faucet_controller.h"
-namespace
+extern "C"
 {
-FaucetController faucet;
-} // namespace
+  #include "faucet_controller.h"
+};
 
 static int faucetLevel = 0;
 
-// This implementation will light up the LEDs on the board in response to
-// different commands.
+// Change temperature level and actuate valves if necesessary respondig to commands
 void RespondToCommand(tflite::ErrorReporter *error_reporter,
                       int32_t current_time, const char *found_command,
                       uint8_t score, bool is_new_command, bool activate_valves)
@@ -38,7 +36,7 @@ void RespondToCommand(tflite::ErrorReporter *error_reporter,
     // Blue led heart beat
     am_hal_gpio_pinconfig(AM_BSP_GPIO_LED_BLUE, g_AM_HAL_GPIO_OUTPUT_12);
 
-    faucet.setUp();
+    faucet_begin();
 
     is_initialized = true;
   }
@@ -46,14 +44,8 @@ void RespondToCommand(tflite::ErrorReporter *error_reporter,
 
   // Toggle the blue LED every time an inference is performed.
   ++count;
-  if (count & 1)
-  {
-    am_hal_gpio_output_set(AM_BSP_GPIO_LED_BLUE);
-  }
-  else
-  {
-    am_hal_gpio_output_clear(AM_BSP_GPIO_LED_BLUE);
-  }
+  count & 1 ? am_hal_gpio_output_set(AM_BSP_GPIO_LED_BLUE) :
+            am_hal_gpio_output_clear(AM_BSP_GPIO_LED_BLUE);
 
   if (is_new_command)
   {
@@ -62,36 +54,18 @@ void RespondToCommand(tflite::ErrorReporter *error_reporter,
     // Level up if 'up' was heard.
     if (found_command[0] == 'u' && found_command[1] == 'p')
     {
-      if (faucetLevel < 4)
-      {
-        faucetLevel++;
-      }
+      faucetLevel = faucet_raise_temperature_level(activate_valves);
       error_reporter->Report("UP level(%d)\n", faucetLevel);
     }
     // Level down if 'down' was heard.
     if (found_command[0] == 'd' && found_command[1] == 'o')
     {
-      if (faucetLevel > 0)
-      {
-        faucetLevel--;
-      }
+      faucetLevel = faucet_lower_temperature_level(activate_valves);
       error_reporter->Report("DOWN level(%d)\n", faucetLevel);
     }
     if (found_command[0] == 'u' && found_command[1] == 'n')
     {
       error_reporter->Report("\nUNKNOWN");
-    }
-    // display actual level
-    faucet.displayLevel(faucetLevel);
-
-    if (activate_valves)
-    {
-      faucet.setValvesState(faucetLevel);
-    }
-    else
-    {
-      // close valves
-      faucet.setValvesState(0);
     }
   }
 }

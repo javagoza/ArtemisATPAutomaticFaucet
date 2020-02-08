@@ -15,28 +15,33 @@ limitations under the License.
 
 #include <Wire.h>
 #include "BLE_level_controller.h"
-#include "faucet_controller.h"
+
 #include "faucet_microspeech.h"
 #include "faucet_proximity_sensor.h"
 #include "Arduino.h"
 #include "main_functions.h"
 
-#define DEBOUNCE_COUNT 10
+extern "C"
+{
+#include "faucet_controller.h"
+};
 
-enum State
+#define DEBOUNCE_COUNT 5
+
+typedef enum States
 {
   IDLE = 0,
   ONLY_LEVEL = 1,
   OPEN = 2,
   BLUETOOTH = 3
-};
-enum State actualState = IDLE;
+} State;
+
+State actualState = IDLE;
 
 // Globals, used for compatibility with Arduino-style sketches.
 namespace
 {
 FaucetMicrospeech *faucetMicrospeech = nullptr;
-FaucetController *faucetController = nullptr;
 FaucetProximitySensor *faucetProximitySensor = nullptr;
 tflite::ErrorReporter *error_reporter = nullptr;
 
@@ -61,13 +66,15 @@ void setup()
 
   faucetMicrospeech->begin(error_reporter);
   error_reporter->Report("Microspeech setup");
+
+  faucet_begin();
 }
 
 State getNewState(uint16_t proxValue)
 {
-  if (proxValue > 5 && proxValue < 20)
+  if (proxValue > 5 && proxValue <= 20)
     return ONLY_LEVEL;
-  if (proxValue > 20 && proxValue < 400)
+  if (proxValue > 20 && proxValue <= 400)
     return OPEN;
   if (proxValue > 400)
     return BLUETOOTH;
@@ -76,16 +83,17 @@ State getNewState(uint16_t proxValue)
 
 void processOnlyLevelState()
 {
-  // TODO adjust actual level
-  // Do not activate valves only change temp level
-  faucetController->valves_state_clear();
+  // Change temp level, do not activate valves. 
+  faucet_close_faucet();
+  faucet_display_actual_level();
   faucetMicrospeech->process(error_reporter, false);
 }
 
 void processOpenState()
 {
-  // TODO adjust actual level
-  // Activate valves and change temp level
+  // Activate valves and change temp level.
+  faucet_open_faucet();
+  faucet_display_actual_level();
   faucetMicrospeech->process(error_reporter, true);
 }
 
@@ -93,9 +101,11 @@ void processBluetoothState()
 {
   static bool is_ble_ready = false;
   static bool is_ble_initialized = false;
-  faucetController->set_blue_led_high();
+  faucet_set_blue_led_high();
   if (!is_ble_initialized)
   {
+    faucet_close_faucet();
+    faucet_display_actual_level();
     is_ble_initialized = true;
 
     error_reporter->Report("Ble setup");
@@ -110,10 +120,9 @@ void processBluetoothState()
 
 void processIdleState()
 {
-  faucetController->set_blue_led_low();
-
-  //faucetController->level_display_clear();
-  faucetController->valves_state_clear();
+  faucet_close_faucet();
+  faucet_set_blue_led_low();
+  faucet_level_display_clear();
 }
 
 State debounceState(State actualState, State newState){

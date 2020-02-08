@@ -48,8 +48,11 @@
 #include "gap_api.h"
 #include "fmpl/fmpl_api.h"
 
+#include "faucet_controller.h"
+
 extern void debug_print(const char* f, const char* F, uint16_t L);
 extern void debug_printf(char* fmt, ...);
+
 
 
 /**************************************************************************************************
@@ -314,21 +317,22 @@ static void tagAlert(uint8_t alert)
     debug_printf("alert: 0x%02X\n", alert);
   #endif
   /* perform alert according to setting of alert alert */
-  if (alert == CH_ALERT_LVL_NONE)
-  {
-    //set_blue_led_low();
-    AppUiAction(APP_UI_ALERT_CANCEL);
-  }
-  else if (alert == CH_ALERT_LVL_MILD)
-  {
-    //set_blue_led_high();
-    AppUiAction(APP_UI_ALERT_LOW);
-  }
-  else if (alert == CH_ALERT_LVL_HIGH)
-  {
-    //set_blue_led_high();
-    AppUiAction(APP_UI_ALERT_HIGH);
-  }
+    int level = 0;
+    if (alert == CH_ALERT_LVL_NONE) {
+        faucet_close_faucet();
+        faucet_level_display_clear();
+        AppUiAction(APP_UI_ALERT_CANCEL);
+    } else if (alert == CH_ALERT_LVL_MILD) {
+        level = faucet_lower_temperature_level(TRUE);
+        AppUiAction(APP_UI_ALERT_LOW);
+    } else if (alert == CH_ALERT_LVL_HIGH) {
+        level = faucet_raise_temperature_level(TRUE);
+        AppUiAction(APP_UI_ALERT_HIGH);
+    }
+   #ifdef DEBUG
+    debug_print(__func__, __FILE__, __LINE__);
+    debug_printf("level: %d\n", level);
+  #endif
 }
 
 static void tagSetup(dmEvt_t *pMsg);
