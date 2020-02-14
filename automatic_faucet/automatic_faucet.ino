@@ -26,7 +26,7 @@ extern "C"
 #include "faucet_controller.h"
 };
 
-#define DEBOUNCE_COUNT 5
+#define DEBOUNCE_COUNT 8
 
 typedef enum States
 {
