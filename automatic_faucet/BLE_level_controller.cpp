@@ -38,7 +38,7 @@
 void setup_ble() {
 
   #ifdef DEBUG
-    SERIAL_PORT.begin(115200);
+    SERIAL_PORT.begin(9600);
     delay(1000);
     SERIAL_PORT.printf("Artemis Faucet BLE Example. Compiled: %s\n", __TIME__);
   #endif
