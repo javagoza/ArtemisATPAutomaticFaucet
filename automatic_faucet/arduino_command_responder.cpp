@@ -19,7 +19,7 @@ limitations under the License.
 
 extern "C"
 {
-  #include "faucet_controller.h"
+#include "faucet_controller.h"
 };
 
 static int faucetLevel = 0;
@@ -44,8 +44,7 @@ void RespondToCommand(tflite::ErrorReporter *error_reporter,
 
   // Toggle the blue LED every time an inference is performed.
   ++count;
-  count & 1 ? am_hal_gpio_output_set(AM_BSP_GPIO_LED_BLUE) :
-            am_hal_gpio_output_clear(AM_BSP_GPIO_LED_BLUE);
+  count & 1 ? am_hal_gpio_output_set(AM_BSP_GPIO_LED_BLUE) : am_hal_gpio_output_clear(AM_BSP_GPIO_LED_BLUE);
 
   if (is_new_command)
   {
