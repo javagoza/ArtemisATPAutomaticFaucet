@@ -80,6 +80,11 @@ void faucet_close_faucet(void)
     faucet_valves_state_clear();
 }
 
+void faucet_reset_level(void)
+{
+    actual_level = 0;
+}
+
 void faucet_open_faucet(void)
 {
     faucet_display_level(actual_level);

@@ -30,4 +30,6 @@ void faucet_set_led_level_high(const int ledPort);
 
 void faucet_set_led_level_low(const int ledPort);
 
+void faucet_reset_level(void);
+
 #endif // FAUCET_CONTROLLER_H

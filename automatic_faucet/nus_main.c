@@ -316,9 +316,10 @@ static void tagAlert(uint8_t alert)
     debug_print(__func__, __FILE__, __LINE__);
     debug_printf("alert: 0x%02X\n", alert);
   #endif
-  /* perform alert according to setting of alert alert */
+  /* perform faucet actions according to setting of alert alert */
     int level = 0;
     if (alert == CH_ALERT_LVL_NONE) {
+        faucet_reset_level();
         faucet_close_faucet();
         faucet_level_display_clear();
         AppUiAction(APP_UI_ALERT_CANCEL);
